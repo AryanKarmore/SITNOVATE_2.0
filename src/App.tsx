@@ -13,7 +13,6 @@ import EventFeed from '@/components/feed/EventFeed';
 import CaseStudyPanel from '@/components/panel/CaseStudyPanel';
 import ScenarioInput from '@/components/ScenarioInput';
 
-// Types
 import type { StateData } from '@/types';
 
 function App() {
@@ -23,38 +22,22 @@ function App() {
   const [selectedState, setSelectedState] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'simulation' | 'strategy'>('simulation');
 
-  // Simulation control
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
-    
     if (isPlaying) {
       interval = setInterval(() => {
         setSimulationCycle(prev => {
-          if (prev >= 100) {
-            setIsPlaying(false);
-            return 100;
-          }
+          if (prev >= 100) { setIsPlaying(false); return 100; }
           return prev + 1;
         });
       }, 1000 / speed);
     }
-    
     return () => clearInterval(interval);
   }, [isPlaying, speed]);
 
-  const handlePlayPause = () => {
-    setIsPlaying(!isPlaying);
-  };
-
-  const handleReset = () => {
-    setIsPlaying(false);
-    setSimulationCycle(0);
-    setSelectedState(null);
-  };
-
-  const handleFastForward = () => {
-    setSpeed(prev => Math.min(prev + 1, 5));
-  };
+  const handlePlayPause = () => setIsPlaying(!isPlaying);
+  const handleReset = () => { setIsPlaying(false); setSimulationCycle(0); setSelectedState(null); };
+  const handleFastForward = () => setSpeed(prev => Math.min(prev + 1, 5));
 
   const handleStateClick = useCallback((state: StateData) => {
     setSelectedState(state.id);
@@ -65,84 +48,62 @@ function App() {
   }, []);
 
   const handleScenarioSubmit = useCallback((_scenario: string, affectedStates: string[]) => {
-    // Jump to a relevant cycle based on scenario
     setSimulationCycle(45);
-    if (affectedStates.length > 0) {
-      setSelectedState(affectedStates[0]);
-    }
+    if (affectedStates.length > 0) setSelectedState(affectedStates[0]);
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white">
+    <div className="min-h-screen bg-[#0a0a0f] text-white flex flex-col">
       {/* Header */}
-      <header className="border-b border-gray-800 bg-[#0f0f15]">
-        <div className="px-6 py-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-xl font-bold text-black">M</span>
+      <header className="border-b border-gray-800 bg-[#0f0f15] flex-shrink-0">
+        <div className="px-5 py-3">
+          <div className="flex justify-between items-center gap-4">
+            {/* Logo + Title */}
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <div className="w-9 h-9 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center">
+                <span className="text-lg font-bold text-black">M</span>
               </div>
               <div>
-                <h1 className="text-2xl font-bold neon-text">MAPPO</h1>
-                <p className="text-xs text-gray-400">Multi-Agent Proximal Policy Optimization</p>
+                <h1 className="text-xl font-bold neon-text leading-tight">MAPPO</h1>
+                <p className="text-[10px] text-gray-400 leading-tight">Multi-Agent Proximal Policy Optimization</p>
               </div>
             </div>
 
-            {/* Navigation Tabs */}
+            {/* Tabs */}
             <div className="flex bg-[#1a1a25] rounded-lg p-1">
-              <button
-                onClick={() => setActiveTab('simulation')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  activeTab === 'simulation' 
-                    ? 'bg-cyan-500 text-black' 
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                Live Simulation
-              </button>
-              <button
-                onClick={() => setActiveTab('strategy')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  activeTab === 'strategy' 
-                    ? 'bg-cyan-500 text-black' 
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                Strategy Generator
-              </button>
+              {(['simulation', 'strategy'] as const).map(tab => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors capitalize ${
+                    activeTab === tab ? 'bg-cyan-500 text-black' : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  {tab === 'simulation' ? 'Live Simulation' : 'Strategy Generator'}
+                </button>
+              ))}
             </div>
 
-            {/* Simulation Controls */}
+            {/* Controls */}
             {activeTab === 'simulation' && (
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 bg-[#1a1a25] rounded-lg px-3 py-2">
-                  <span className="text-xs text-gray-400">Cycle:</span>
-                  <span className="text-lg font-mono font-bold text-cyan-400">{simulationCycle}</span>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="flex items-center gap-2 bg-[#1a1a25] rounded-lg px-3 py-1.5">
+                  <span className="text-xs text-gray-400">Cycle</span>
+                  <span className="text-base font-mono font-bold text-cyan-400 min-w-[2.5rem] text-right">{simulationCycle}</span>
                 </div>
-                
                 <div className="flex items-center gap-1">
-                  <Button
-                    onClick={handleReset}
-                    variant="outline"
-                    size="icon"
-                    className="border-gray-700 hover:bg-gray-800"
-                  >
-                    <RotateCcw className="w-4 h-4" />
+                  <Button onClick={handleReset} variant="outline" size="icon" className="border-gray-700 hover:bg-gray-800 h-8 w-8">
+                    <RotateCcw className="w-3.5 h-3.5" />
                   </Button>
-                  
                   <Button
                     onClick={handlePlayPause}
-                    className={`${isPlaying ? 'bg-red-500 hover:bg-red-600' : 'bg-cyan-500 hover:bg-cyan-600'} text-black`}
+                    size="sm"
+                    className={`${isPlaying ? 'bg-red-500 hover:bg-red-600' : 'bg-cyan-500 hover:bg-cyan-600'} text-black px-3`}
                   >
-                    {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                    {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
                   </Button>
-                  
-                  <Button
-                    onClick={handleFastForward}
-                    variant="outline"
-                    className="border-gray-700 hover:bg-gray-800"
-                  >
-                    <FastForward className="w-4 h-4" />
+                  <Button onClick={handleFastForward} variant="outline" size="sm" className="border-gray-700 hover:bg-gray-800">
+                    <FastForward className="w-3.5 h-3.5" />
                     <span className="ml-1 text-xs">{speed}x</span>
                   </Button>
                 </div>
@@ -153,123 +114,100 @@ function App() {
       </header>
 
       {/* Main Content */}
-      <main className="p-6">
+      <main className="flex-1 p-4 overflow-auto">
         {activeTab === 'simulation' ? (
-          <div className="grid grid-cols-12 gap-4">
-            {/* Row 1: Map and Network */}
-            <div className="col-span-12 lg:col-span-6 h-[500px]">
-              <IndiaMap 
+          <div className="grid grid-cols-12 gap-3 auto-rows-min">
+            {/* Row 1: Map + Network */}
+            <div className="col-span-12 lg:col-span-6" style={{ height: '440px' }}>
+              <IndiaMap
                 onStateClick={handleStateClick}
                 selectedState={selectedState}
                 simulationCycle={simulationCycle}
               />
             </div>
-            
-            <div className="col-span-12 lg:col-span-6 h-[500px]">
+            <div className="col-span-12 lg:col-span-6" style={{ height: '440px' }}>
               <TradeNetwork simulationCycle={simulationCycle} />
             </div>
 
-            {/* Row 2: Conflict Matrix and Agent Attention */}
-            <div className="col-span-12 lg:col-span-6 h-[400px]">
+            {/* Row 2: Conflict Matrix + Agent Attention */}
+            <div className="col-span-12 lg:col-span-6" style={{ height: '380px' }}>
               <ConflictMatrix simulationCycle={simulationCycle} />
             </div>
-            
-            <div className="col-span-12 lg:col-span-6 h-[400px]">
-              <AgentAttention 
-                selectedAgent={selectedState || 'GJ'} 
+            <div className="col-span-12 lg:col-span-6" style={{ height: '380px' }}>
+              <AgentAttention
+                selectedAgent={selectedState || 'GJ'}
                 simulationCycle={simulationCycle}
               />
             </div>
 
-            {/* Row 3: Resource History and Strategy Heatmap */}
-            <div className="col-span-12 lg:col-span-6 h-[500px]">
-              <ResourceHistory 
+            {/* Row 3: Resource History + Strategy Heatmap */}
+            <div className="col-span-12 lg:col-span-6" style={{ height: '460px' }}>
+              <ResourceHistory
                 selectedState={selectedState || 'RJ'}
                 simulationCycle={simulationCycle}
               />
             </div>
-            
-            <div className="col-span-12 lg:col-span-6 h-[500px]">
+            <div className="col-span-12 lg:col-span-6" style={{ height: '460px' }}>
               <StrategyHeatmap />
             </div>
 
-            {/* Row 4: Event Feed and Case Study */}
-            <div className="col-span-12 lg:col-span-6 h-[400px]">
-              <EventFeed 
+            {/* Row 4: Event Feed + Case Study */}
+            <div className="col-span-12 lg:col-span-6" style={{ height: '380px' }}>
+              <EventFeed
                 simulationCycle={simulationCycle}
                 onEventClick={handleEventClick}
               />
             </div>
-            
-            <div className="col-span-12 lg:col-span-6 h-[400px]">
+            <div className="col-span-12 lg:col-span-6" style={{ height: '380px' }}>
               <CaseStudyPanel simulationCycle={simulationCycle} />
             </div>
           </div>
         ) : (
           <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Strategy Input */}
-              <div className="h-[700px]">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <div style={{ height: '680px' }}>
                 <ScenarioInput onScenarioSubmit={handleScenarioSubmit} />
               </div>
-              
-              {/* Quick Stats */}
               <div className="space-y-4">
-                <div className="bg-[#12121a] rounded-xl p-6 border border-gray-800">
-                  <h3 className="text-lg font-semibold text-white mb-4">System Capabilities</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-[#0a0a0f] rounded-lg p-4">
-                      <div className="text-3xl font-bold text-cyan-400">28</div>
-                      <div className="text-sm text-gray-400">Indian States</div>
-                    </div>
-                    <div className="bg-[#0a0a0f] rounded-lg p-4">
-                      <div className="text-3xl font-bold text-green-400">150+</div>
-                      <div className="text-sm text-gray-400">Trade Connections</div>
-                    </div>
-                    <div className="bg-[#0a0a0f] rounded-lg p-4">
-                      <div className="text-3xl font-bold text-yellow-400">45</div>
-                      <div className="text-sm text-gray-400">Action Types</div>
-                    </div>
-                    <div className="bg-[#0a0a0f] rounded-lg p-4">
-                      <div className="text-3xl font-bold text-red-400">10K+</div>
-                      <div className="text-sm text-gray-400">Training Episodes</div>
-                    </div>
+                <div className="bg-[#12121a] rounded-xl p-5 border border-gray-800">
+                  <h3 className="text-base font-semibold text-white mb-4">System Capabilities</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { value: '28', label: 'Indian States', color: 'text-cyan-400' },
+                      { value: '150+', label: 'Trade Connections', color: 'text-green-400' },
+                      { value: '45', label: 'Action Types', color: 'text-yellow-400' },
+                      { value: '10K+', label: 'Training Episodes', color: 'text-red-400' },
+                    ].map(({ value, label, color }) => (
+                      <div key={label} className="bg-[#0a0a0f] rounded-lg p-3">
+                        <div className={`text-2xl font-bold ${color}`}>{value}</div>
+                        <div className="text-xs text-gray-400 mt-0.5">{label}</div>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
-                <div className="bg-[#12121a] rounded-xl p-6 border border-gray-800">
-                  <h3 className="text-lg font-semibold text-white mb-4">How It Works</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 bg-cyan-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <span className="text-xs text-cyan-400">1</span>
+                <div className="bg-[#12121a] rounded-xl p-5 border border-gray-800">
+                  <h3 className="text-base font-semibold text-white mb-3">How It Works</h3>
+                  <div className="space-y-2.5">
+                    {[
+                      'Describe a scenario or select from quick options',
+                      'MAPPO agents analyze and simulate outcomes',
+                      'Receive comprehensive resource allocation strategy',
+                      'Export or print for implementation',
+                    ].map((step, i) => (
+                      <div key={i} className="flex items-start gap-3">
+                        <div className="w-5 h-5 bg-cyan-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <span className="text-xs text-cyan-400">{i + 1}</span>
+                        </div>
+                        <p className="text-sm text-gray-400">{step}</p>
                       </div>
-                      <p className="text-sm text-gray-400">Describe a scenario or select from quick options</p>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 bg-cyan-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <span className="text-xs text-cyan-400">2</span>
-                      </div>
-                      <p className="text-sm text-gray-400">MAPPO agents analyze and simulate outcomes</p>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 bg-cyan-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <span className="text-xs text-cyan-400">3</span>
-                      </div>
-                      <p className="text-sm text-gray-400">Receive comprehensive resource allocation strategy</p>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 bg-cyan-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <span className="text-xs text-cyan-400">4</span>
-                      </div>
-                      <p className="text-sm text-gray-400">Export or print for implementation</p>
-                    </div>
+                    ))}
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-r from-cyan-900/30 to-blue-900/30 rounded-xl p-6 border border-cyan-500/30">
-                  <h3 className="text-lg font-semibold text-cyan-400 mb-2">Example Queries</h3>
-                  <ul className="space-y-2 text-sm text-gray-300">
+                <div className="bg-gradient-to-r from-cyan-900/30 to-blue-900/30 rounded-xl p-5 border border-cyan-500/30">
+                  <h3 className="text-base font-semibold text-cyan-400 mb-2">Example Queries</h3>
+                  <ul className="space-y-1.5 text-sm text-gray-300">
                     <li>• "Maharashtra Region is facing droughts"</li>
                     <li>• "Karnataka-Tamil Nadu water dispute escalation"</li>
                     <li>• "Punjab agricultural crisis due to groundwater depletion"</li>
@@ -283,15 +221,15 @@ function App() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-gray-800 bg-[#0f0f15] mt-8">
-        <div className="px-6 py-4">
-          <div className="flex justify-between items-center text-sm text-gray-500">
-            <div>
-              MAPPO Dashboard • Multi-Agent Reinforcement Learning for Interstate Resource Allocation
-            </div>
+      <footer className="border-t border-gray-800 bg-[#0f0f15] flex-shrink-0">
+        <div className="px-5 py-2.5">
+          <div className="flex justify-between items-center text-xs text-gray-500">
+            <div>MAPPO · Multi-Agent Reinforcement Learning for Interstate Resource Allocation</div>
             <div className="flex gap-4">
               <span>Cycle: {simulationCycle}/100</span>
-              <span>Status: {isPlaying ? 'Running' : 'Paused'}</span>
+              <span className={isPlaying ? 'text-green-400' : 'text-gray-500'}>
+                {isPlaying ? '● Running' : '○ Paused'}
+              </span>
             </div>
           </div>
         </div>
