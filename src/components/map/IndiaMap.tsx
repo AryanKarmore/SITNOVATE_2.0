@@ -10,39 +10,22 @@ interface IndiaMapProps {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// INDIA OUTLINE — single accurate SVG path of India's outer boundary
-// Derived from Natural Earth 1:10m cultural vectors, projected to 500×560 canvas
-// This is ONE path for the whole country silhouette — clean, recognisable shape
+// STRATEGY: Use the actual India map PNG as SVG background image.
+// The viewBox is 0 0 800 900 (matching the image's ~portrait aspect ratio).
+// All state marker coordinates below are calibrated to this viewBox.
+//
+// Map image origin: top-left corner aligns with J&K top-left.
+// The image shows India with states outlined — we overlay interactive dots.
 // ─────────────────────────────────────────────────────────────────────────────
-const INDIA_OUTLINE = `
-M 186,14 L 195,10 L 208,8 L 224,10 L 238,6 L 252,8 L 264,14 L 274,22
-L 282,32 L 290,28 L 302,26 L 316,30 L 328,38 L 336,48 L 340,60 L 336,72
-L 328,78 L 320,72 L 310,68 L 300,72 L 290,80 L 282,90 L 292,96 L 300,106
-L 308,116 L 318,122 L 330,118 L 342,112 L 354,108 L 366,110 L 378,116
-L 388,124 L 394,134 L 392,146 L 386,156 L 378,164 L 370,170 L 376,178
-L 382,188 L 386,200 L 382,210 L 374,216 L 364,214 L 356,208 L 348,214
-L 342,224 L 346,234 L 348,246 L 344,256 L 336,260 L 328,256 L 320,250
-L 314,258 L 312,270 L 318,280 L 322,292 L 318,304 L 310,312 L 300,316
-L 290,312 L 282,304 L 276,294 L 272,282 L 264,276 L 254,278 L 248,288
-L 248,300 L 252,312 L 256,324 L 254,336 L 246,344 L 236,348 L 228,356
-L 224,368 L 220,382 L 214,394 L 206,404 L 196,412 L 184,416 L 174,410
-L 168,398 L 164,384 L 162,370 L 158,358 L 152,348 L 144,342 L 138,332
-L 136,320 L 140,308 L 146,298 L 148,286 L 144,276 L 134,272 L 124,274
-L 116,280 L 108,274 L 102,264 L 98,252 L 96,240 L 94,228 L 88,218
-L 80,210 L 72,204 L 68,194 L 70,182 L 76,172 L 84,164 L 88,152 L 86,140
-L 82,128 L 80,116 L 84,106 L 92,98 L 100,92 L 108,86 L 112,76 L 110,64
-L 112,54 L 120,46 L 130,40 L 140,36 L 150,30 L 160,22 L 172,16 Z
-M 88,234 L 96,230 L 102,238 L 100,248 L 92,252 L 84,246 Z
-M 76,182 L 80,186 L 76,192 L 70,188 Z
-`;
 
-// Andaman & Nicobar (separate island group — far east)
-const ANDAMAN_OUTLINE = `M 430,290 L 436,286 L 440,292 L 438,300 L 432,304 L 426,298 Z`;
+// NOTE: Replace INDIA_MAP_SRC with the actual path/URL to the uploaded PNG.
+// In a Next.js / Vite project this would be imported or referenced as a public asset.
+const INDIA_MAP_SRC = '/india-map.png'; // <-- point this to your uploaded image
 
 // ─────────────────────────────────────────────────────────────────────────────
-// STATE CAPITALS — x,y on the 500×560 canvas + display name
-// These are plotted as markers ON TOP of the India outline.
-// Coordinates match actual geographic positions of each state capital.
+// STATE MARKERS — coordinates calibrated for the standard India outline image
+// viewBox: 0 0 800 900  (portrait)
+// Origin (0,0) = top-left of image; positive X→right, positive Y→down
 // ─────────────────────────────────────────────────────────────────────────────
 const STATE_MARKERS: Record<string, {
   x: number; y: number;
@@ -50,45 +33,45 @@ const STATE_MARKERS: Record<string, {
   capital: string;
   abbr: string;
 }> = {
-  // ── North ──────────────────────────────────────────────────────────────
-  JK:  { x: 188, y: 44,  name: 'Jammu & Kashmir',   capital: 'Srinagar',    abbr: 'JK'  },
-  LA:  { x: 234, y: 36,  name: 'Ladakh',             capital: 'Leh',         abbr: 'LA'  },
-  HP:  { x: 224, y: 76,  name: 'Himachal Pradesh',   capital: 'Shimla',      abbr: 'HP'  },
-  PB:  { x: 178, y: 82,  name: 'Punjab',             capital: 'Chandigarh',  abbr: 'PB'  },
-  UT:  { x: 250, y: 90,  name: 'Uttarakhand',        capital: 'Dehradun',    abbr: 'UT'  },
-  HR:  { x: 196, y: 108, name: 'Haryana',            capital: 'Chandigarh',  abbr: 'HR'  },
-  DL:  { x: 204, y: 122, name: 'Delhi',              capital: 'New Delhi',   abbr: 'DL'  },
-  // ── West ───────────────────────────────────────────────────────────────
-  RJ:  { x: 144, y: 150, name: 'Rajasthan',          capital: 'Jaipur',      abbr: 'RJ'  },
-  GJ:  { x: 102, y: 202, name: 'Gujarat',            capital: 'Gandhinagar', abbr: 'GJ'  },
-  // ── Central ────────────────────────────────────────────────────────────
-  UP:  { x: 262, y: 132, name: 'Uttar Pradesh',      capital: 'Lucknow',     abbr: 'UP'  },
-  MP:  { x: 214, y: 184, name: 'Madhya Pradesh',     capital: 'Bhopal',      abbr: 'MP'  },
-  CG:  { x: 272, y: 210, name: 'Chhattisgarh',       capital: 'Raipur',      abbr: 'CG'  },
-  // ── East ───────────────────────────────────────────────────────────────
-  BR:  { x: 308, y: 142, name: 'Bihar',              capital: 'Patna',       abbr: 'BR'  },
-  JH:  { x: 300, y: 180, name: 'Jharkhand',          capital: 'Ranchi',      abbr: 'JH'  },
-  WB:  { x: 330, y: 186, name: 'West Bengal',        capital: 'Kolkata',     abbr: 'WB'  },
-  OD:  { x: 306, y: 226, name: 'Odisha',             capital: 'Bhubaneswar', abbr: 'OD'  },
-  // ── Northeast ──────────────────────────────────────────────────────────
-  SK:  { x: 346, y: 128, name: 'Sikkim',             capital: 'Gangtok',     abbr: 'SK'  },
-  AR:  { x: 390, y: 116, name: 'Arunachal Pradesh',  capital: 'Itanagar',    abbr: 'AR'  },
-  AS:  { x: 368, y: 142, name: 'Assam',              capital: 'Dispur',      abbr: 'AS'  },
-  NL:  { x: 398, y: 152, name: 'Nagaland',           capital: 'Kohima',      abbr: 'NL'  },
-  ML:  { x: 350, y: 164, name: 'Meghalaya',          capital: 'Shillong',    abbr: 'ML'  },
-  MN:  { x: 406, y: 166, name: 'Manipur',            capital: 'Imphal',      abbr: 'MN'  },
-  TR:  { x: 362, y: 184, name: 'Tripura',            capital: 'Agartala',    abbr: 'TR'  },
-  MZ:  { x: 388, y: 186, name: 'Mizoram',            capital: 'Aizawl',      abbr: 'MZ'  },
-  // ── South ──────────────────────────────────────────────────────────────
-  MH:  { x: 178, y: 238, name: 'Maharashtra',        capital: 'Mumbai',      abbr: 'MH'  },
-  TL:  { x: 240, y: 258, name: 'Telangana',          capital: 'Hyderabad',   abbr: 'TL'  },
-  AP:  { x: 256, y: 296, name: 'Andhra Pradesh',     capital: 'Amaravati',   abbr: 'AP'  },
-  GA:  { x: 150, y: 278, name: 'Goa',                capital: 'Panaji',      abbr: 'GA'  },
-  KA:  { x: 194, y: 298, name: 'Karnataka',          capital: 'Bengaluru',   abbr: 'KA'  },
-  TN:  { x: 226, y: 346, name: 'Tamil Nadu',         capital: 'Chennai',     abbr: 'TN'  },
-  KL:  { x: 174, y: 364, name: 'Kerala',             capital: 'Thiruvananthapuram', abbr: 'KL' },
-  // ── Union Territories ──────────────────────────────────────────────────
-  AN:  { x: 430, y: 294, name: 'Andaman & Nicobar',  capital: 'Port Blair',  abbr: 'AN'  },
+  // ── North ──────────────────────────────────────────────────────────────────
+  JK:  { x: 258, y:  82, name: 'Jammu & Kashmir',   capital: 'Srinagar',             abbr: 'JK'  },
+  LA:  { x: 370, y:  60, name: 'Ladakh',             capital: 'Leh',                  abbr: 'LA'  },
+  HP:  { x: 326, y: 150, name: 'Himachal Pradesh',   capital: 'Shimla',               abbr: 'HP'  },
+  PB:  { x: 256, y: 152, name: 'Punjab',             capital: 'Chandigarh',           abbr: 'PB'  },
+  UT:  { x: 376, y: 158, name: 'Uttarakhand',        capital: 'Dehradun',             abbr: 'UT'  },
+  HR:  { x: 282, y: 196, name: 'Haryana',            capital: 'Chandigarh',           abbr: 'HR'  },
+  DL:  { x: 302, y: 218, name: 'Delhi',              capital: 'New Delhi',            abbr: 'DL'  },
+  // ── West ───────────────────────────────────────────────────────────────────
+  RJ:  { x: 222, y: 272, name: 'Rajasthan',          capital: 'Jaipur',               abbr: 'RJ'  },
+  GJ:  { x: 134, y: 348, name: 'Gujarat',            capital: 'Gandhinagar',          abbr: 'GJ'  },
+  // ── Central ────────────────────────────────────────────────────────────────
+  UP:  { x: 376, y: 240, name: 'Uttar Pradesh',      capital: 'Lucknow',              abbr: 'UP'  },
+  MP:  { x: 308, y: 342, name: 'Madhya Pradesh',     capital: 'Bhopal',               abbr: 'MP'  },
+  CG:  { x: 420, y: 394, name: 'Chhattisgarh',       capital: 'Raipur',               abbr: 'CG'  },
+  // ── East ───────────────────────────────────────────────────────────────────
+  BR:  { x: 474, y: 256, name: 'Bihar',              capital: 'Patna',                abbr: 'BR'  },
+  JH:  { x: 468, y: 322, name: 'Jharkhand',          capital: 'Ranchi',               abbr: 'JH'  },
+  WB:  { x: 524, y: 310, name: 'West Bengal',        capital: 'Kolkata',              abbr: 'WB'  },
+  OD:  { x: 480, y: 404, name: 'Odisha',             capital: 'Bhubaneswar',          abbr: 'OD'  },
+  // ── Northeast ──────────────────────────────────────────────────────────────
+  SK:  { x: 560, y: 224, name: 'Sikkim',             capital: 'Gangtok',              abbr: 'SK'  },
+  AR:  { x: 650, y: 200, name: 'Arunachal Pradesh',  capital: 'Itanagar',             abbr: 'AR'  },
+  AS:  { x: 614, y: 244, name: 'Assam',              capital: 'Dispur',               abbr: 'AS'  },
+  NL:  { x: 668, y: 258, name: 'Nagaland',           capital: 'Kohima',               abbr: 'NL'  },
+  ML:  { x: 594, y: 278, name: 'Meghalaya',          capital: 'Shillong',             abbr: 'ML'  },
+  MN:  { x: 672, y: 284, name: 'Manipur',            capital: 'Imphal',               abbr: 'MN'  },
+  TR:  { x: 600, y: 306, name: 'Tripura',            capital: 'Agartala',             abbr: 'TR'  },
+  MZ:  { x: 638, y: 316, name: 'Mizoram',            capital: 'Aizawl',               abbr: 'MZ'  },
+  // ── South ──────────────────────────────────────────────────────────────────
+  MH:  { x: 252, y: 440, name: 'Maharashtra',        capital: 'Mumbai',               abbr: 'MH'  },
+  TL:  { x: 370, y: 476, name: 'Telangana',          capital: 'Hyderabad',            abbr: 'TL'  },
+  AP:  { x: 400, y: 540, name: 'Andhra Pradesh',     capital: 'Amaravati',            abbr: 'AP'  },
+  GA:  { x: 220, y: 524, name: 'Goa',                capital: 'Panaji',               abbr: 'GA'  },
+  KA:  { x: 294, y: 560, name: 'Karnataka',          capital: 'Bengaluru',            abbr: 'KA'  },
+  TN:  { x: 358, y: 640, name: 'Tamil Nadu',         capital: 'Chennai',              abbr: 'TN'  },
+  KL:  { x: 274, y: 660, name: 'Kerala',             capital: 'Thiruvananthapuram',   abbr: 'KL'  },
+  // ── Union Territories ──────────────────────────────────────────────────────
+  AN:  { x: 720, y: 560, name: 'Andaman & Nicobar',  capital: 'Port Blair',           abbr: 'AN'  },
 };
 
 // Water dispute connections — geopolitically accurate
@@ -98,13 +81,13 @@ const DISPUTE_LINKS: Array<{
   color: string;
   minCycle: number;
 }> = [
-  { from: 'KA', to: 'TN', label: 'Cauvery',       color: '#38bdf8', minCycle: 0  },
-  { from: 'KA', to: 'AP', label: 'Krishna',        color: '#818cf8', minCycle: 20 },
-  { from: 'MH', to: 'KA', label: 'Krishna (upper)',color: '#818cf8', minCycle: 20 },
-  { from: 'PB', to: 'RJ', label: 'Ravi-Beas',      color: '#38bdf8', minCycle: 10 },
-  { from: 'UP', to: 'BR', label: 'Ganga basin',    color: '#38bdf8', minCycle: 30 },
-  { from: 'AP', to: 'TN', label: 'Krishna-lower',  color: '#818cf8', minCycle: 25 },
-  { from: 'GJ', to: 'RJ', label: 'Narmada',        color: '#4ade80', minCycle: 15 },
+  { from: 'KA', to: 'TN', label: 'Cauvery',        color: '#38bdf8', minCycle: 0  },
+  { from: 'KA', to: 'AP', label: 'Krishna',         color: '#818cf8', minCycle: 20 },
+  { from: 'MH', to: 'KA', label: 'Krishna (upper)', color: '#818cf8', minCycle: 20 },
+  { from: 'PB', to: 'RJ', label: 'Ravi-Beas',       color: '#38bdf8', minCycle: 10 },
+  { from: 'UP', to: 'BR', label: 'Ganga basin',     color: '#38bdf8', minCycle: 30 },
+  { from: 'AP', to: 'TN', label: 'Krishna-lower',   color: '#818cf8', minCycle: 25 },
+  { from: 'GJ', to: 'RJ', label: 'Narmada',         color: '#4ade80', minCycle: 15 },
 ];
 
 const STATUS_CFG = {
@@ -142,9 +125,26 @@ const IndiaMap: React.FC<IndiaMapProps> = ({ onStateClick, selectedState, simula
 
   const activeLinks = DISPUTE_LINKS.filter(l => simulationCycle >= l.minCycle);
 
+  // Label offset nudge to avoid dot overlap in dense regions
+  const LABEL_OFFSETS: Record<string, [number, number]> = {
+    DL:  [14, -10],
+    HR:  [-14, -8],
+    SK:  [14, -6],
+    NL:  [16, 0],
+    ML:  [-16, 6],
+    MN:  [16, 4],
+    TR:  [-16, 6],
+    MZ:  [14, 6],
+    LA:  [14, -8],
+    AN:  [0, 16],
+    GA:  [-14, 6],
+    PB:  [-14, -6],
+    UT:  [14, -6],
+  };
+
   return (
     <div className="relative w-full h-full bg-[#060a12] rounded-xl overflow-hidden border border-white/5">
-      {/* Ambient */}
+      {/* Ambient glow */}
       <div className="pointer-events-none absolute inset-0"
         style={{ background: 'radial-gradient(ellipse 70% 60% at 40% 45%, rgba(56,189,248,0.04) 0%, transparent 70%)' }} />
 
@@ -157,7 +157,7 @@ const IndiaMap: React.FC<IndiaMapProps> = ({ onStateClick, selectedState, simula
           <p className="text-[9px] text-gray-600 mt-0.5">Cycle {simulationCycle} / 100</p>
         </div>
         <div className="flex gap-3 items-center">
-          {([['#22c55e','Stable'],['#f59e0b','Stressed'],['#ef4444','Critical']] as const).map(([c,l]) => (
+          {([['#22c55e', 'Stable'], ['#f59e0b', 'Stressed'], ['#ef4444', 'Critical']] as const).map(([c, l]) => (
             <div key={l} className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full" style={{ background: c, boxShadow: `0 0 5px ${c}` }} />
               <span className="text-[9px] text-gray-500">{l}</span>
@@ -166,48 +166,78 @@ const IndiaMap: React.FC<IndiaMapProps> = ({ onStateClick, selectedState, simula
         </div>
       </div>
 
-      {/* ── SVG ─────────────────────────────────────────────────────────── */}
-      <svg viewBox="60 0 420 440" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
+      {/* ── SVG ─────────────────────────────────────────────────────────────── */}
+      {/*
+        viewBox="0 0 800 900" — portrait aspect matching the India map image.
+        The <image> tag renders the actual PNG; all markers overlay it exactly.
+      */}
+      <svg viewBox="0 0 800 900" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
         <defs>
-          <filter id="im-glow"><feGaussianBlur stdDeviation="3" result="b"/>
-            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-          <filter id="im-glow-sm"><feGaussianBlur stdDeviation="1.5" result="b"/>
-            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-          <filter id="im-glow-lg"><feGaussianBlur stdDeviation="6" result="b"/>
-            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <filter id="im-glow">
+            <feGaussianBlur stdDeviation="3" result="b" />
+            <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+          <filter id="im-glow-sm">
+            <feGaussianBlur stdDeviation="1.5" result="b" />
+            <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+          <filter id="im-glow-lg">
+            <feGaussianBlur stdDeviation="6" result="b" />
+            <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
 
-          {/* Ocean pattern */}
-          <pattern id="ocean-dots" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse">
-            <circle cx="6" cy="6" r="0.6" fill="rgba(56,189,248,0.12)" />
+          {/* Ocean dot pattern */}
+          <pattern id="ocean-dots" x="0" y="0" width="14" height="14" patternUnits="userSpaceOnUse">
+            <circle cx="7" cy="7" r="0.7" fill="rgba(56,189,248,0.12)" />
           </pattern>
+
+          {/* Tint overlay to darken the white map image */}
+          <filter id="map-tint" colorInterpolationFilters="sRGB">
+            <feColorMatrix type="matrix"
+              values="0.05 0    0    0 0.04
+                      0    0.12 0    0 0.15
+                      0    0    0.22 0 0.22
+                      0    0    0    1 0" />
+          </filter>
         </defs>
 
-        {/* Ocean fill */}
-        <rect x="60" y="0" width="420" height="440" fill="#040c18" />
-        <rect x="60" y="0" width="420" height="440" fill="url(#ocean-dots)" />
+        {/* Ocean background */}
+        <rect x="0" y="0" width="800" height="900" fill="#040c18" />
+        <rect x="0" y="0" width="800" height="900" fill="url(#ocean-dots)" />
 
-        {/* ── INDIA SILHOUETTE ── */}
-        {/* Shadow / depth layer */}
-        <path d={INDIA_OUTLINE}
-          fill="rgba(0,20,40,0.8)" stroke="none"
-          transform="translate(3,3)"
-          filter="url(#im-glow-lg)"
-        />
-        {/* Main landmass fill */}
-        <path d={INDIA_OUTLINE}
-          fill="#0d1f35"
-          stroke="#1a3a5c"
-          strokeWidth={1.5}
-        />
-        {/* Top highlight */}
-        <path d={INDIA_OUTLINE}
-          fill="none"
-          stroke="rgba(56,189,248,0.2)"
-          strokeWidth={0.8}
+        {/*
+          ── INDIA MAP IMAGE ──────────────────────────────────────────────────
+          The uploaded PNG is the authoritative India state map.
+          We apply a color matrix filter to turn the white/black line-art into
+          our dark-navy + cyan-border aesthetic so it blends with the UI.
+
+          IMPORTANT: In your project, copy the uploaded PNG to your public folder
+          and update INDIA_MAP_SRC to the correct path, e.g. '/india-map.png'.
+          In Next.js: place in /public/india-map.png → src="/india-map.png"
+          In Vite/CRA: place in /public/ → src="/india-map.png"
+        */}
+        <image
+          href={INDIA_MAP_SRC}
+          x="40"
+          y="30"
+          width="680"
+          height="760"
+          preserveAspectRatio="xMidYMid meet"
+          filter="url(#map-tint)"
+          opacity={0.9}
         />
 
-        {/* Andaman */}
-        <path d={ANDAMAN_OUTLINE} fill="#0d1f35" stroke="#1a3a5c" strokeWidth={1} />
+        {/* Subtle cyan border re-trace glow on top of image */}
+        <image
+          href={INDIA_MAP_SRC}
+          x="40"
+          y="30"
+          width="680"
+          height="760"
+          preserveAspectRatio="xMidYMid meet"
+          opacity={0.08}
+          style={{ mixBlendMode: 'screen' }}
+        />
 
         {/* ── DISPUTE CONNECTION LINES ── */}
         {activeLinks.map((link, i) => {
@@ -217,8 +247,8 @@ const IndiaMap: React.FC<IndiaMapProps> = ({ onStateClick, selectedState, simula
           return (
             <motion.line key={`${link.from}-${link.to}`}
               x1={a.x} y1={a.y} x2={b.x} y2={b.y}
-              stroke={link.color} strokeWidth={0.8} strokeDasharray="3 3"
-              animate={{ strokeOpacity: [0.15, 0.6, 0.15] }}
+              stroke={link.color} strokeWidth={1} strokeDasharray="4 4"
+              animate={{ strokeOpacity: [0.15, 0.65, 0.15] }}
               transition={{ duration: 2.5, repeat: Infinity, delay: i * 0.3 }}
             />
           );
@@ -229,19 +259,21 @@ const IndiaMap: React.FC<IndiaMapProps> = ({ onStateClick, selectedState, simula
           const m = STATE_MARKERS[state.id];
           if (!m) return null;
 
-          const cfg  = STATUS_CFG[state.status] ?? STATUS_CFG.green;
-          const isH  = hovered === state.id;
-          const isS  = selectedState === state.id;
+          const cfg    = STATUS_CFG[state.status] ?? STATUS_CFG.green;
+          const isH    = hovered === state.id;
+          const isS    = selectedState === state.id;
           const isCrit = state.status === 'red' || state.status === 'black';
           const active = isH || isS;
 
-          // Label nudge to avoid overlap for dense NE states
-          const LABEL_OFFSETS: Record<string, [number, number]> = {
-            SK: [8, -4], NL: [10, 0], ML: [-10, 6], MN: [10, 2],
-            TR: [-10, 4], MZ: [8, 4], LA: [8, -4], AN: [0, 10],
-            DL: [8, -4], GA: [-10, 4], HR: [-10, 0],
-          };
           const [lox, loy] = LABEL_OFFSETS[state.id] ?? [0, 0];
+
+          // Label position: when active, push label further out; default nudge
+          const lx = active
+            ? m.x + (lox !== 0 ? lox * 2.2 : 0)
+            : m.x + (lox !== 0 ? lox : 10);
+          const ly = active
+            ? m.y + (loy !== 0 ? loy * 2.2 : -14)
+            : m.y + (loy !== 0 ? loy : -10);
 
           return (
             <g key={state.id} style={{ cursor: 'pointer' }}
@@ -249,96 +281,123 @@ const IndiaMap: React.FC<IndiaMapProps> = ({ onStateClick, selectedState, simula
               onMouseEnter={() => setHovered(state.id)}
               onMouseLeave={() => setHovered(null)}
             >
-              {/* Active state: connection line to label */}
-              {active && lox !== 0 && (
-                <line x1={m.x} y1={m.y} x2={m.x + lox * 1.8} y2={m.y + loy * 1.8}
-                  stroke={cfg.dot} strokeWidth={0.6} strokeOpacity={0.5} />
+              {/* Leader line for nudged labels when active */}
+              {active && (lox !== 0 || loy !== 0) && (
+                <line
+                  x1={m.x} y1={m.y}
+                  x2={lx} y2={ly}
+                  stroke={cfg.dot} strokeWidth={0.7} strokeOpacity={0.5}
+                />
               )}
 
-              {/* Pulse ring for critical */}
+              {/* Pulse ring for critical states */}
               {isCrit && (
-                <motion.circle cx={m.x} cy={m.y} r={8}
-                  fill="none" stroke={cfg.glow} strokeWidth={1}
-                  animate={{ r: [6, 14, 6], opacity: [0.6, 0, 0.6] }}
+                <motion.circle cx={m.x} cy={m.y} r={10}
+                  fill="none" stroke={cfg.glow} strokeWidth={1.2}
+                  animate={{ r: [7, 16, 7], opacity: [0.7, 0, 0.7] }}
                   transition={{ duration: 1.8, repeat: Infinity }}
                 />
               )}
 
               {/* Selection ring */}
               {isS && (
-                <circle cx={m.x} cy={m.y} r={9}
-                  fill="none" stroke="#38bdf8" strokeWidth={1.5}
+                <circle cx={m.x} cy={m.y} r={11}
+                  fill="none" stroke="#38bdf8" strokeWidth={1.8}
                   filter="url(#im-glow-sm)"
                 />
               )}
 
-              {/* Inner dot */}
-              <motion.circle cx={m.x} cy={m.y}
-                r={active ? 5 : isCrit ? 4.5 : 3.5}
+              {/* Hover ring */}
+              {isH && !isS && (
+                <circle cx={m.x} cy={m.y} r={10}
+                  fill="none" stroke={cfg.dot} strokeWidth={1}
+                  opacity={0.5}
+                />
+              )}
+
+              {/* Main dot */}
+              <motion.circle
+                cx={m.x} cy={m.y}
+                r={active ? 6 : isCrit ? 5.5 : 4.5}
                 fill={cfg.dot}
-                stroke={active ? '#fff' : 'rgba(0,0,0,0.4)'}
-                strokeWidth={active ? 1.2 : 0.6}
+                stroke={active ? '#fff' : 'rgba(0,0,0,0.5)'}
+                strokeWidth={active ? 1.4 : 0.8}
                 filter={active || isCrit ? 'url(#im-glow-sm)' : undefined}
-                animate={{ r: isCrit && !active ? [3.5, 5, 3.5] : undefined }}
+                animate={isCrit && !active ? { r: [4, 6, 4] } : undefined}
                 transition={{ duration: 1.5, repeat: Infinity }}
               />
 
-              {/* State label */}
+              {/* State abbreviation label */}
               <text
-                x={m.x + (active ? lox * 2 + (lox === 0 ? 0 : 0) : lox + 8)}
-                y={m.y + (active ? loy * 2 + (loy === 0 ? -8 : loy < 0 ? -8 : 8) : loy + (loy < 0 ? -7 : loy > 0 ? 8 : -7))}
+                x={lx}
+                y={ly}
                 textAnchor={lox < 0 ? 'end' : lox > 0 ? 'start' : 'middle'}
                 dominantBaseline="middle"
-                fill={active ? '#fff' : 'rgba(255,255,255,0.65)'}
-                fontSize={active ? 8.5 : 6.5}
+                fill={active ? '#fff' : 'rgba(255,255,255,0.75)'}
+                fontSize={active ? 10 : 7.5}
                 fontWeight={active ? '700' : '500'}
                 style={{ pointerEvents: 'none', userSelect: 'none' }}
-              >{state.id}</text>
+              >
+                {state.id}
+              </text>
             </g>
           );
         })}
 
-        {/* Cascade arrows during drought */}
+        {/* Cascade arrows during drought scenario */}
         {simulationCycle >= 42 && simulationCycle < 52 && (
           <>
-            <motion.path d="M 144,152 C 170,165 195,175 214,182"
-              stroke="#ef4444" strokeWidth={1.2} fill="none" strokeDasharray="4 3"
-              animate={{ opacity: [0, 0.8, 0] }} transition={{ duration: 2, repeat: Infinity }} />
-            <motion.path d="M 214,182 C 234,175 250,162 264,134"
-              stroke="#f59e0b" strokeWidth={1} fill="none" strokeDasharray="4 3"
-              animate={{ opacity: [0, 0.6, 0] }} transition={{ duration: 2, repeat: Infinity, delay: 0.5 }} />
+            <motion.path
+              d={`M ${STATE_MARKERS.RJ.x},${STATE_MARKERS.RJ.y} C ${(STATE_MARKERS.RJ.x + STATE_MARKERS.MP.x) / 2},${STATE_MARKERS.RJ.y} ${(STATE_MARKERS.RJ.x + STATE_MARKERS.MP.x) / 2},${STATE_MARKERS.MP.y} ${STATE_MARKERS.MP.x},${STATE_MARKERS.MP.y}`}
+              stroke="#ef4444" strokeWidth={1.4} fill="none" strokeDasharray="5 4"
+              animate={{ opacity: [0, 0.9, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            />
+            <motion.path
+              d={`M ${STATE_MARKERS.MP.x},${STATE_MARKERS.MP.y} C ${(STATE_MARKERS.MP.x + STATE_MARKERS.UP.x) / 2},${(STATE_MARKERS.MP.y + STATE_MARKERS.UP.y) / 2} ${(STATE_MARKERS.MP.x + STATE_MARKERS.UP.x) / 2},${STATE_MARKERS.UP.y} ${STATE_MARKERS.UP.x},${STATE_MARKERS.UP.y}`}
+              stroke="#f59e0b" strokeWidth={1.2} fill="none" strokeDasharray="5 4"
+              animate={{ opacity: [0, 0.7, 0] }}
+              transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+            />
           </>
         )}
       </svg>
 
-      {/* ── Info Card ───────────────────────────────────────────────────── */}
+      {/* ── Info Card ─────────────────────────────────────────────────────── */}
       <AnimatePresence>
         {focusState && focusMarker && (
-          <motion.div className="absolute bottom-3 left-3 z-20 rounded-xl p-3"
+          <motion.div
+            className="absolute bottom-3 left-3 z-20 rounded-xl p-3"
             style={{
-              minWidth: 178,
-              background: 'rgba(6,10,18,0.96)',
+              minWidth: 190,
+              background: 'rgba(6,10,18,0.97)',
               border: '1px solid rgba(255,255,255,0.08)',
-              backdropFilter: 'blur(10px)',
+              backdropFilter: 'blur(12px)',
             }}
-            initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 6 }}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
           >
             <div className="flex items-center justify-between mb-2">
               <div>
                 <p className="text-xs font-bold text-white leading-tight">{focusMarker.name}</p>
-                <p className="text-[9px] text-gray-600 mt-0.5">🏛 {focusMarker.capital}</p>
+                <p className="text-[9px] text-gray-500 mt-0.5">🏛 {focusMarker.capital}</p>
               </div>
-              <span className="text-[9px] px-1.5 py-0.5 rounded-full capitalize font-semibold ml-2"
+              <span
+                className="text-[9px] px-1.5 py-0.5 rounded-full capitalize font-semibold ml-2"
                 style={{
                   color: STATUS_CFG[focusState.status]?.dot,
                   background: `${STATUS_CFG[focusState.status]?.dot}20`,
                   border: `1px solid ${STATUS_CFG[focusState.status]?.dot}44`,
-                }}>{focusState.status}</span>
+                }}
+              >
+                {focusState.status}
+              </span>
             </div>
             {([
-              ['Water',      focusState.resources.water,       '#38bdf8'],
-              ['Power',      focusState.resources.power,       '#fbbf24'],
-              ['Agriculture',focusState.resources.agriculture, '#4ade80'],
+              ['Water',       focusState.resources.water,       '#38bdf8'],
+              ['Power',       focusState.resources.power,       '#fbbf24'],
+              ['Agriculture', focusState.resources.agriculture, '#4ade80'],
             ] as [string, number, string][]).map(([l, v, c]) => (
               <div key={l} className="mb-1.5">
                 <div className="flex justify-between text-[9px] mb-0.5">
@@ -346,9 +405,13 @@ const IndiaMap: React.FC<IndiaMapProps> = ({ onStateClick, selectedState, simula
                   <span style={{ color: c }} className="font-mono font-bold">{v}%</span>
                 </div>
                 <div className="h-[3px] bg-gray-800/80 rounded-full overflow-hidden">
-                  <motion.div className="h-full rounded-full" style={{ background: c }}
-                    initial={{ width: 0 }} animate={{ width: `${v}%` }}
-                    transition={{ duration: 0.45 }} />
+                  <motion.div
+                    className="h-full rounded-full"
+                    style={{ background: c }}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${v}%` }}
+                    transition={{ duration: 0.45 }}
+                  />
                 </div>
               </div>
             ))}
@@ -356,12 +419,18 @@ const IndiaMap: React.FC<IndiaMapProps> = ({ onStateClick, selectedState, simula
         )}
       </AnimatePresence>
 
-      {/* Shock banner */}
+      {/* Drought shock banner */}
       <AnimatePresence>
         {simulationCycle >= 42 && simulationCycle <= 47 && (
-          <motion.div className="absolute top-12 left-1/2 -translate-x-1/2 z-20 whitespace-nowrap rounded-lg px-3 py-1.5"
-            style={{ background: 'rgba(120,15,15,0.92)', border: '1px solid rgba(239,68,68,0.6)' }}
-            initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+          <motion.div
+            className="absolute top-12 left-1/2 -translate-x-1/2 z-20 whitespace-nowrap rounded-lg px-3 py-1.5"
+            style={{
+              background: 'rgba(120,15,15,0.92)',
+              border: '1px solid rgba(239,68,68,0.6)',
+            }}
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
           >
             <div className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping inline-block" />
