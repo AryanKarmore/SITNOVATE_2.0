@@ -1,6 +1,5 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import * as d3 from 'd3';
 import { indiaStates, tradeConnections } from '@/data/indiaStates';
 
 interface TradeNetworkProps {
@@ -35,7 +34,6 @@ const NODE_POSITIONS: Record<string, { x: number; y: number }> = {
 const ACTIVE_NODES = ['PB', 'HR', 'RJ', 'GJ', 'MP', 'UP', 'DL', 'BR', 'WB', 'MH', 'KA', 'TN', 'KL', 'AP', 'CG', 'OD'];
 
 const TradeNetwork: React.FC<TradeNetworkProps> = ({ simulationCycle = 0 }) => {
-  const svgRef = useRef<SVGSVGElement>(null);
   const [brokenConnections, setBrokenConnections] = useState<string[]>([]);
   const [tick, setTick] = useState(0);
 
@@ -88,7 +86,6 @@ const TradeNetwork: React.FC<TradeNetworkProps> = ({ simulationCycle = 0 }) => {
       </div>
 
       <svg
-        ref={svgRef}
         viewBox="75 30 340 390"
         className="w-full h-full"
         preserveAspectRatio="xMidYMid meet"
