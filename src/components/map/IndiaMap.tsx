@@ -36,58 +36,54 @@ const STATE_MARKERS: Record<string, {
   capital: string;
   abbr: string;
 }> = {
-  // ─────────────────────────────────────────────────────────────────────────
-  // Coordinates derived by linearly mapping indiaStates position values:
-  //   data x [120–480] → SVG x [90–540]
-  //   data y [80–440]  → SVG y [55–715]
-  // viewBox="0 0 800 900", image at x=40 y=30 w=680 h=760
-  // ─────────────────────────────────────────────────────────────────────────
+  // Coordinates measured directly from screenshot (415×500px) back-calculated
+  // to SVG viewBox (800×900). Scale: x×1.928, y×1.8
 
   // ── North ─────────────────────────────────────────────────────────────────
-  JK:  { x: 165, y:  55, name: 'Jammu & Kashmir',   capital: 'Srinagar',           abbr: 'JK'  },
-  LA:  { x: 328, y:  55, name: 'Ladakh',             capital: 'Leh',               abbr: 'LA'  },
-  HP:  { x: 228, y: 110, name: 'Himachal Pradesh',   capital: 'Shimla',            abbr: 'HP'  },
-  PB:  { x: 190, y: 165, name: 'Punjab',             capital: 'Chandigarh',        abbr: 'PB'  },
-  UT:  { x: 253, y: 165, name: 'Uttarakhand',        capital: 'Dehradun',          abbr: 'UT'  },
-  HR:  { x: 203, y: 220, name: 'Haryana',            capital: 'Chandigarh',        abbr: 'HR'  },
-  DL:  { x: 228, y: 248, name: 'Delhi',              capital: 'New Delhi',         abbr: 'DL'  },
+  JK:  { x: 270, y: 117, name: 'Jammu & Kashmir',   capital: 'Srinagar',             abbr: 'JK'  },
+  LA:  { x: 390, y:  76, name: 'Ladakh',             capital: 'Leh',                  abbr: 'LA'  },
+  HP:  { x: 335, y: 148, name: 'Himachal Pradesh',   capital: 'Shimla',               abbr: 'HP'  },
+  PB:  { x: 270, y: 171, name: 'Punjab',             capital: 'Chandigarh',           abbr: 'PB'  },
+  UT:  { x: 375, y: 171, name: 'Uttarakhand',        capital: 'Dehradun',             abbr: 'UT'  },
+  HR:  { x: 305, y: 207, name: 'Haryana',            capital: 'Chandigarh',           abbr: 'HR'  },
+  DL:  { x: 320, y: 228, name: 'Delhi',              capital: 'New Delhi',            abbr: 'DL'  },
 
   // ── West ──────────────────────────────────────────────────────────────────
-  RJ:  { x: 128, y: 275, name: 'Rajasthan',          capital: 'Jaipur',            abbr: 'RJ'  },
-  GJ:  { x:  90, y: 385, name: 'Gujarat',            capital: 'Gandhinagar',       abbr: 'GJ'  },
+  RJ:  { x: 227, y: 288, name: 'Rajasthan',          capital: 'Jaipur',               abbr: 'RJ'  },
+  GJ:  { x: 170, y: 388, name: 'Gujarat',            capital: 'Gandhinagar',          abbr: 'GJ'  },
 
   // ── Central ───────────────────────────────────────────────────────────────
-  UP:  { x: 290, y: 275, name: 'Uttar Pradesh',      capital: 'Lucknow',           abbr: 'UP'  },
-  MP:  { x: 228, y: 385, name: 'Madhya Pradesh',     capital: 'Bhopal',            abbr: 'MP'  },
-  CG:  { x: 290, y: 422, name: 'Chhattisgarh',       capital: 'Raipur',            abbr: 'CG'  },
+  UP:  { x: 390, y: 261, name: 'Uttar Pradesh',      capital: 'Lucknow',              abbr: 'UP'  },
+  MP:  { x: 310, y: 400, name: 'Madhya Pradesh',     capital: 'Bhopal',               abbr: 'MP'  },
+  CG:  { x: 408, y: 448, name: 'Chhattisgarh',       capital: 'Raipur',               abbr: 'CG'  },
 
   // ── East ──────────────────────────────────────────────────────────────────
-  BR:  { x: 378, y: 312, name: 'Bihar',              capital: 'Patna',             abbr: 'BR'  },
-  JH:  { x: 365, y: 385, name: 'Jharkhand',          capital: 'Ranchi',            abbr: 'JH'  },
-  WB:  { x: 415, y: 385, name: 'West Bengal',        capital: 'Kolkata',           abbr: 'WB'  },
-  OD:  { x: 340, y: 458, name: 'Odisha',             capital: 'Bhubaneswar',       abbr: 'OD'  },
+  BR:  { x: 455, y: 258, name: 'Bihar',              capital: 'Patna',                abbr: 'BR'  },
+  JH:  { x: 440, y: 362, name: 'Jharkhand',          capital: 'Ranchi',               abbr: 'JH'  },
+  WB:  { x: 490, y: 352, name: 'West Bengal',        capital: 'Kolkata',              abbr: 'WB'  },
+  OD:  { x: 458, y: 448, name: 'Odisha',             capital: 'Bhubaneswar',          abbr: 'OD'  },
 
-  // ── Northeast ─────────────────────────────────────────────────────────────
-  SK:  { x: 465, y: 238, name: 'Sikkim',             capital: 'Gangtok',           abbr: 'SK'  },
-  AR:  { x: 540, y: 202, name: 'Arunachal Pradesh',  capital: 'Itanagar',          abbr: 'AR'  },
-  AS:  { x: 465, y: 293, name: 'Assam',              capital: 'Dispur',            abbr: 'AS'  },
-  NL:  { x: 528, y: 275, name: 'Nagaland',           capital: 'Kohima',            abbr: 'NL'  },
-  ML:  { x: 478, y: 330, name: 'Meghalaya',          capital: 'Shillong',          abbr: 'ML'  },
-  MN:  { x: 515, y: 330, name: 'Manipur',            capital: 'Imphal',            abbr: 'MN'  },
-  TR:  { x: 465, y: 385, name: 'Tripura',            capital: 'Agartala',          abbr: 'TR'  },
-  MZ:  { x: 490, y: 367, name: 'Mizoram',            capital: 'Aizawl',            abbr: 'MZ'  },
+  // ── Northeast — within NE bulge ───────────────────────────────────────────
+  SK:  { x: 542, y: 240, name: 'Sikkim',             capital: 'Gangtok',              abbr: 'SK'  },
+  AR:  { x: 598, y: 215, name: 'Arunachal Pradesh',  capital: 'Itanagar',             abbr: 'AR'  },
+  AS:  { x: 572, y: 272, name: 'Assam',              capital: 'Dispur',               abbr: 'AS'  },
+  NL:  { x: 610, y: 282, name: 'Nagaland',           capital: 'Kohima',               abbr: 'NL'  },
+  ML:  { x: 556, y: 305, name: 'Meghalaya',          capital: 'Shillong',             abbr: 'ML'  },
+  MN:  { x: 614, y: 318, name: 'Manipur',            capital: 'Imphal',               abbr: 'MN'  },
+  TR:  { x: 565, y: 335, name: 'Tripura',            capital: 'Agartala',             abbr: 'TR'  },
+  MZ:  { x: 594, y: 350, name: 'Mizoram',            capital: 'Aizawl',               abbr: 'MZ'  },
 
   // ── South ─────────────────────────────────────────────────────────────────
-  MH:  { x: 165, y: 495, name: 'Maharashtra',        capital: 'Mumbai',            abbr: 'MH'  },
-  TL:  { x: 215, y: 550, name: 'Telangana',          capital: 'Hyderabad',         abbr: 'TL'  },
-  AP:  { x: 240, y: 605, name: 'Andhra Pradesh',     capital: 'Amaravati',         abbr: 'AP'  },
-  GA:  { x: 115, y: 568, name: 'Goa',                capital: 'Panaji',            abbr: 'GA'  },
-  KA:  { x: 165, y: 605, name: 'Karnataka',          capital: 'Bengaluru',         abbr: 'KA'  },
-  TN:  { x: 215, y: 678, name: 'Tamil Nadu',         capital: 'Chennai',           abbr: 'TN'  },
-  KL:  { x: 165, y: 715, name: 'Kerala',             capital: 'Thiruvananthapuram',abbr: 'KL'  },
+  MH:  { x: 272, y: 518, name: 'Maharashtra',        capital: 'Mumbai',               abbr: 'MH'  },
+  TL:  { x: 368, y: 545, name: 'Telangana',          capital: 'Hyderabad',            abbr: 'TL'  },
+  AP:  { x: 395, y: 605, name: 'Andhra Pradesh',     capital: 'Amaravati',            abbr: 'AP'  },
+  GA:  { x: 228, y: 592, name: 'Goa',                capital: 'Panaji',               abbr: 'GA'  },
+  KA:  { x: 282, y: 628, name: 'Karnataka',          capital: 'Bengaluru',            abbr: 'KA'  },
+  TN:  { x: 348, y: 695, name: 'Tamil Nadu',         capital: 'Chennai',              abbr: 'TN'  },
+  KL:  { x: 262, y: 715, name: 'Kerala',             capital: 'Thiruvananthapuram',   abbr: 'KL'  },
 
   // ── Union Territories ─────────────────────────────────────────────────────
-  AN:  { x: 660, y: 510, name: 'Andaman & Nicobar',  capital: 'Port Blair',        abbr: 'AN'  },
+  AN:  { x: 680, y: 580, name: 'Andaman & Nicobar',  capital: 'Port Blair',           abbr: 'AN'  },
 };
 
 // Water dispute connections — geopolitically accurate
@@ -248,24 +244,28 @@ const IndiaMap: React.FC<IndiaMapProps> = ({ onStateClick, selectedState, simula
           In Next.js: place in /public/india-map.png → src="/india-map.png"
           In Vite/CRA: place in /public/ → src="/india-map.png"
         */}
+        {/*
+          Image is 736×736 square. We render it as a perfect square 680×680
+          centered in the viewport. y=70 because (900-680)/2 ≈ 110... but we
+          want it near the top, so y=70 gives a small top margin.
+          The calculated render position from Python: x=40, y=70, w=680, h=680
+        */}
         <image
           href={INDIA_MAP_SRC}
           x="40"
-          y="30"
+          y="70"
           width="680"
-          height="760"
+          height="680"
           preserveAspectRatio="xMidYMid meet"
           filter="url(#map-tint)"
           opacity={0.9}
         />
-
-        {/* Subtle cyan border re-trace glow on top of image */}
         <image
           href={INDIA_MAP_SRC}
           x="40"
-          y="30"
+          y="70"
           width="680"
-          height="760"
+          height="680"
           preserveAspectRatio="xMidYMid meet"
           opacity={0.08}
           style={{ mixBlendMode: 'screen' }}
