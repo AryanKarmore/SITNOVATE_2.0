@@ -19,7 +19,7 @@ interface IndiaMapProps {
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ── Set true locally to click-to-log SVG coords for calibration ──────────────
-const DEV_CALIBRATE = false;
+const DEV_CALIBRATE = true;
 
 // NOTE: Replace INDIA_MAP_SRC with the actual path/URL to the uploaded PNG.
 // In a Next.js / Vite project this would be imported or referenced as a public asset.
