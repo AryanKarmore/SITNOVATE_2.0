@@ -18,6 +18,9 @@ interface IndiaMapProps {
 // The image shows India with states outlined — we overlay interactive dots.
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ── Set true locally to click-to-log SVG coords for calibration ──────────────
+const DEV_CALIBRATE = false;
+
 // NOTE: Replace INDIA_MAP_SRC with the actual path/URL to the uploaded PNG.
 // In a Next.js / Vite project this would be imported or referenced as a public asset.
 const INDIA_MAP_SRC = '/india-map.png'; // <-- point this to your uploaded image
@@ -33,45 +36,58 @@ const STATE_MARKERS: Record<string, {
   capital: string;
   abbr: string;
 }> = {
-  // ── North ──────────────────────────────────────────────────────────────────
-  JK:  { x: 258, y:  82, name: 'Jammu & Kashmir',   capital: 'Srinagar',             abbr: 'JK'  },
-  LA:  { x: 370, y:  60, name: 'Ladakh',             capital: 'Leh',                  abbr: 'LA'  },
-  HP:  { x: 326, y: 150, name: 'Himachal Pradesh',   capital: 'Shimla',               abbr: 'HP'  },
-  PB:  { x: 256, y: 152, name: 'Punjab',             capital: 'Chandigarh',           abbr: 'PB'  },
-  UT:  { x: 376, y: 158, name: 'Uttarakhand',        capital: 'Dehradun',             abbr: 'UT'  },
-  HR:  { x: 282, y: 196, name: 'Haryana',            capital: 'Chandigarh',           abbr: 'HR'  },
-  DL:  { x: 302, y: 218, name: 'Delhi',              capital: 'New Delhi',            abbr: 'DL'  },
-  // ── West ───────────────────────────────────────────────────────────────────
-  RJ:  { x: 222, y: 272, name: 'Rajasthan',          capital: 'Jaipur',               abbr: 'RJ'  },
-  GJ:  { x: 134, y: 348, name: 'Gujarat',            capital: 'Gandhinagar',          abbr: 'GJ'  },
-  // ── Central ────────────────────────────────────────────────────────────────
-  UP:  { x: 376, y: 240, name: 'Uttar Pradesh',      capital: 'Lucknow',              abbr: 'UP'  },
-  MP:  { x: 308, y: 342, name: 'Madhya Pradesh',     capital: 'Bhopal',               abbr: 'MP'  },
-  CG:  { x: 420, y: 394, name: 'Chhattisgarh',       capital: 'Raipur',               abbr: 'CG'  },
-  // ── East ───────────────────────────────────────────────────────────────────
-  BR:  { x: 474, y: 256, name: 'Bihar',              capital: 'Patna',                abbr: 'BR'  },
-  JH:  { x: 468, y: 322, name: 'Jharkhand',          capital: 'Ranchi',               abbr: 'JH'  },
-  WB:  { x: 524, y: 310, name: 'West Bengal',        capital: 'Kolkata',              abbr: 'WB'  },
-  OD:  { x: 480, y: 404, name: 'Odisha',             capital: 'Bhubaneswar',          abbr: 'OD'  },
-  // ── Northeast ──────────────────────────────────────────────────────────────
-  SK:  { x: 560, y: 224, name: 'Sikkim',             capital: 'Gangtok',              abbr: 'SK'  },
-  AR:  { x: 650, y: 200, name: 'Arunachal Pradesh',  capital: 'Itanagar',             abbr: 'AR'  },
-  AS:  { x: 614, y: 244, name: 'Assam',              capital: 'Dispur',               abbr: 'AS'  },
-  NL:  { x: 668, y: 258, name: 'Nagaland',           capital: 'Kohima',               abbr: 'NL'  },
-  ML:  { x: 594, y: 278, name: 'Meghalaya',          capital: 'Shillong',             abbr: 'ML'  },
-  MN:  { x: 672, y: 284, name: 'Manipur',            capital: 'Imphal',               abbr: 'MN'  },
-  TR:  { x: 600, y: 306, name: 'Tripura',            capital: 'Agartala',             abbr: 'TR'  },
-  MZ:  { x: 638, y: 316, name: 'Mizoram',            capital: 'Aizawl',               abbr: 'MZ'  },
-  // ── South ──────────────────────────────────────────────────────────────────
-  MH:  { x: 252, y: 440, name: 'Maharashtra',        capital: 'Mumbai',               abbr: 'MH'  },
-  TL:  { x: 370, y: 476, name: 'Telangana',          capital: 'Hyderabad',            abbr: 'TL'  },
-  AP:  { x: 400, y: 540, name: 'Andhra Pradesh',     capital: 'Amaravati',            abbr: 'AP'  },
-  GA:  { x: 220, y: 524, name: 'Goa',                capital: 'Panaji',               abbr: 'GA'  },
-  KA:  { x: 294, y: 560, name: 'Karnataka',          capital: 'Bengaluru',            abbr: 'KA'  },
-  TN:  { x: 358, y: 640, name: 'Tamil Nadu',         capital: 'Chennai',              abbr: 'TN'  },
-  KL:  { x: 274, y: 660, name: 'Kerala',             capital: 'Thiruvananthapuram',   abbr: 'KL'  },
-  // ── Union Territories ──────────────────────────────────────────────────────
-  AN:  { x: 720, y: 560, name: 'Andaman & Nicobar',  capital: 'Port Blair',           abbr: 'AN'  },
+  // ─────────────────────────────────────────────────────────────────────────
+  // Coordinates calibrated for viewBox="0 0 800 900"
+  // Image placed at: x=40, y=30, width=680, height=760
+  // Original map image is ~735×760 (portrait). Each state dot is placed at
+  // the visual centroid of that state as seen on the reference PNG.
+  // ─────────────────────────────────────────────────────────────────────────
+
+  // ── North ─────────────────────────────────────────────────────────────────
+  JK:  { x: 235, y:  95, name: 'Jammu & Kashmir',   capital: 'Srinagar',             abbr: 'JK'  },
+  LA:  { x: 340, y:  68, name: 'Ladakh',             capital: 'Leh',                  abbr: 'LA'  },
+  HP:  { x: 310, y: 148, name: 'Himachal Pradesh',   capital: 'Shimla',               abbr: 'HP'  },
+  PB:  { x: 248, y: 155, name: 'Punjab',             capital: 'Chandigarh',           abbr: 'PB'  },
+  UT:  { x: 355, y: 155, name: 'Uttarakhand',        capital: 'Dehradun',             abbr: 'UT'  },
+  HR:  { x: 272, y: 188, name: 'Haryana',            capital: 'Chandigarh',           abbr: 'HR'  },
+  DL:  { x: 290, y: 210, name: 'Delhi',              capital: 'New Delhi',            abbr: 'DL'  },
+
+  // ── West ──────────────────────────────────────────────────────────────────
+  RJ:  { x: 215, y: 268, name: 'Rajasthan',          capital: 'Jaipur',               abbr: 'RJ'  },
+  GJ:  { x: 145, y: 355, name: 'Gujarat',            capital: 'Gandhinagar',          abbr: 'GJ'  },
+
+  // ── Central ───────────────────────────────────────────────────────────────
+  UP:  { x: 365, y: 228, name: 'Uttar Pradesh',      capital: 'Lucknow',              abbr: 'UP'  },
+  MP:  { x: 302, y: 335, name: 'Madhya Pradesh',     capital: 'Bhopal',               abbr: 'MP'  },
+  CG:  { x: 402, y: 388, name: 'Chhattisgarh',       capital: 'Raipur',               abbr: 'CG'  },
+
+  // ── East ──────────────────────────────────────────────────────────────────
+  BR:  { x: 452, y: 248, name: 'Bihar',              capital: 'Patna',                abbr: 'BR'  },
+  JH:  { x: 445, y: 308, name: 'Jharkhand',          capital: 'Ranchi',               abbr: 'JH'  },
+  WB:  { x: 492, y: 298, name: 'West Bengal',        capital: 'Kolkata',              abbr: 'WB'  },
+  OD:  { x: 458, y: 388, name: 'Odisha',             capital: 'Bhubaneswar',          abbr: 'OD'  },
+
+  // ── Northeast — all pulled LEFT to stay inside the map bulge ──────────────
+  SK:  { x: 522, y: 218, name: 'Sikkim',             capital: 'Gangtok',              abbr: 'SK'  },
+  AR:  { x: 595, y: 198, name: 'Arunachal Pradesh',  capital: 'Itanagar',             abbr: 'AR'  },
+  AS:  { x: 565, y: 235, name: 'Assam',              capital: 'Dispur',               abbr: 'AS'  },
+  NL:  { x: 608, y: 248, name: 'Nagaland',           capital: 'Kohima',               abbr: 'NL'  },
+  ML:  { x: 548, y: 262, name: 'Meghalaya',          capital: 'Shillong',             abbr: 'ML'  },
+  MN:  { x: 615, y: 268, name: 'Manipur',            capital: 'Imphal',               abbr: 'MN'  },
+  TR:  { x: 558, y: 282, name: 'Tripura',            capital: 'Agartala',             abbr: 'TR'  },
+  MZ:  { x: 592, y: 292, name: 'Mizoram',            capital: 'Aizawl',               abbr: 'MZ'  },
+
+  // ── South ─────────────────────────────────────────────────────────────────
+  MH:  { x: 248, y: 428, name: 'Maharashtra',        capital: 'Mumbai',               abbr: 'MH'  },
+  TL:  { x: 358, y: 455, name: 'Telangana',          capital: 'Hyderabad',            abbr: 'TL'  },
+  AP:  { x: 385, y: 510, name: 'Andhra Pradesh',     capital: 'Amaravati',            abbr: 'AP'  },
+  GA:  { x: 218, y: 502, name: 'Goa',                capital: 'Panaji',               abbr: 'GA'  },
+  KA:  { x: 288, y: 535, name: 'Karnataka',          capital: 'Bengaluru',            abbr: 'KA'  },
+  TN:  { x: 342, y: 605, name: 'Tamil Nadu',         capital: 'Chennai',              abbr: 'TN'  },
+  KL:  { x: 268, y: 625, name: 'Kerala',             capital: 'Thiruvananthapuram',   abbr: 'KL'  },
+
+  // ── Union Territories ─────────────────────────────────────────────────────
+  AN:  { x: 680, y: 530, name: 'Andaman & Nicobar',  capital: 'Port Blair',           abbr: 'AN'  },
 };
 
 // Water dispute connections — geopolitically accurate
@@ -169,9 +185,25 @@ const IndiaMap: React.FC<IndiaMapProps> = ({ onStateClick, selectedState, simula
       {/* ── SVG ─────────────────────────────────────────────────────────────── */}
       {/*
         viewBox="0 0 800 900" — portrait aspect matching the India map image.
-        The <image> tag renders the actual PNG; all markers overlay it exactly.
+
+        DEV TIP: Set DEV_CALIBRATE=true to enable click-to-log mode.
+        Click anywhere on the map → browser console logs exact SVG x,y.
+        Use those to fix any dot that's still misplaced in STATE_MARKERS.
+        Set back to false before committing.
       */}
-      <svg viewBox="0 0 800 900" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
+      <svg
+        viewBox="0 0 800 900"
+        className="w-full h-full"
+        preserveAspectRatio="xMidYMid meet"
+        onClick={(e) => {
+          if (!DEV_CALIBRATE) return;
+          const svg = e.currentTarget as SVGSVGElement;
+          const pt = svg.createSVGPoint();
+          pt.x = e.clientX; pt.y = e.clientY;
+          const p = pt.matrixTransform(svg.getScreenCTM()!.inverse());
+          console.log(`SVG coords → x: ${Math.round(p.x)}, y: ${Math.round(p.y)}`);
+        }}
+      >
         <defs>
           <filter id="im-glow">
             <feGaussianBlur stdDeviation="3" result="b" />
