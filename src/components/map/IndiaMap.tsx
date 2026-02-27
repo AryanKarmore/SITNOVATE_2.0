@@ -37,58 +37,57 @@ const STATE_MARKERS: Record<string, {
   abbr: string;
 }> = {
   // ─────────────────────────────────────────────────────────────────────────
-  // Coordinates for viewBox="0 0 800 900"
-  // Map image rendered at: x=40, y=30, width=680, height=760
-  // Fine-tuned by back-calculating from screenshot pixel positions.
+  // Coordinates derived by linearly mapping indiaStates position values:
+  //   data x [120–480] → SVG x [90–540]
+  //   data y [80–440]  → SVG y [55–715]
+  // viewBox="0 0 800 900", image at x=40 y=30 w=680 h=760
   // ─────────────────────────────────────────────────────────────────────────
 
   // ── North ─────────────────────────────────────────────────────────────────
-  JK:  { x: 228, y:  90, name: 'Jammu & Kashmir',   capital: 'Srinagar',             abbr: 'JK'  },
-  LA:  { x: 335, y:  62, name: 'Ladakh',             capital: 'Leh',                  abbr: 'LA'  },
-  HP:  { x: 305, y: 145, name: 'Himachal Pradesh',   capital: 'Shimla',               abbr: 'HP'  },
-  PB:  { x: 242, y: 152, name: 'Punjab',             capital: 'Chandigarh',           abbr: 'PB'  },
-  UT:  { x: 350, y: 152, name: 'Uttarakhand',        capital: 'Dehradun',             abbr: 'UT'  },
-  HR:  { x: 265, y: 182, name: 'Haryana',            capital: 'Chandigarh',           abbr: 'HR'  },
-  DL:  { x: 282, y: 200, name: 'Delhi',              capital: 'New Delhi',            abbr: 'DL'  },
+  JK:  { x: 165, y:  55, name: 'Jammu & Kashmir',   capital: 'Srinagar',           abbr: 'JK'  },
+  LA:  { x: 328, y:  55, name: 'Ladakh',             capital: 'Leh',               abbr: 'LA'  },
+  HP:  { x: 228, y: 110, name: 'Himachal Pradesh',   capital: 'Shimla',            abbr: 'HP'  },
+  PB:  { x: 190, y: 165, name: 'Punjab',             capital: 'Chandigarh',        abbr: 'PB'  },
+  UT:  { x: 253, y: 165, name: 'Uttarakhand',        capital: 'Dehradun',          abbr: 'UT'  },
+  HR:  { x: 203, y: 220, name: 'Haryana',            capital: 'Chandigarh',        abbr: 'HR'  },
+  DL:  { x: 228, y: 248, name: 'Delhi',              capital: 'New Delhi',         abbr: 'DL'  },
 
   // ── West ──────────────────────────────────────────────────────────────────
-  RJ:  { x: 210, y: 262, name: 'Rajasthan',          capital: 'Jaipur',               abbr: 'RJ'  },
-  GJ:  { x: 140, y: 348, name: 'Gujarat',            capital: 'Gandhinagar',          abbr: 'GJ'  },
+  RJ:  { x: 128, y: 275, name: 'Rajasthan',          capital: 'Jaipur',            abbr: 'RJ'  },
+  GJ:  { x:  90, y: 385, name: 'Gujarat',            capital: 'Gandhinagar',       abbr: 'GJ'  },
 
   // ── Central ───────────────────────────────────────────────────────────────
-  UP:  { x: 358, y: 222, name: 'Uttar Pradesh',      capital: 'Lucknow',              abbr: 'UP'  },
-  MP:  { x: 295, y: 328, name: 'Madhya Pradesh',     capital: 'Bhopal',               abbr: 'MP'  },
-  CG:  { x: 395, y: 382, name: 'Chhattisgarh',       capital: 'Raipur',               abbr: 'CG'  },
+  UP:  { x: 290, y: 275, name: 'Uttar Pradesh',      capital: 'Lucknow',           abbr: 'UP'  },
+  MP:  { x: 228, y: 385, name: 'Madhya Pradesh',     capital: 'Bhopal',            abbr: 'MP'  },
+  CG:  { x: 290, y: 422, name: 'Chhattisgarh',       capital: 'Raipur',            abbr: 'CG'  },
 
   // ── East ──────────────────────────────────────────────────────────────────
-  //  BR was floating far right — it belongs just right of UP, near ~x:430
-  BR:  { x: 428, y: 238, name: 'Bihar',              capital: 'Patna',                abbr: 'BR'  },
-  JH:  { x: 422, y: 298, name: 'Jharkhand',          capital: 'Ranchi',               abbr: 'JH'  },
-  WB:  { x: 468, y: 285, name: 'West Bengal',        capital: 'Kolkata',              abbr: 'WB'  },
-  OD:  { x: 440, y: 375, name: 'Odisha',             capital: 'Bhubaneswar',          abbr: 'OD'  },
+  BR:  { x: 378, y: 312, name: 'Bihar',              capital: 'Patna',             abbr: 'BR'  },
+  JH:  { x: 365, y: 385, name: 'Jharkhand',          capital: 'Ranchi',            abbr: 'JH'  },
+  WB:  { x: 415, y: 385, name: 'West Bengal',        capital: 'Kolkata',           abbr: 'WB'  },
+  OD:  { x: 340, y: 458, name: 'Odisha',             capital: 'Bhubaneswar',       abbr: 'OD'  },
 
-  // ── Northeast — tightly packed, all within the NE bulge ───────────────────
-  //  The NE bulge on this map spans roughly x:490–610, y:195–305
-  SK:  { x: 498, y: 208, name: 'Sikkim',             capital: 'Gangtok',              abbr: 'SK'  },
-  AR:  { x: 568, y: 192, name: 'Arunachal Pradesh',  capital: 'Itanagar',             abbr: 'AR'  },
-  AS:  { x: 542, y: 228, name: 'Assam',              capital: 'Dispur',               abbr: 'AS'  },
-  NL:  { x: 578, y: 238, name: 'Nagaland',           capital: 'Kohima',               abbr: 'NL'  },
-  ML:  { x: 525, y: 252, name: 'Meghalaya',          capital: 'Shillong',             abbr: 'ML'  },
-  MN:  { x: 582, y: 258, name: 'Manipur',            capital: 'Imphal',               abbr: 'MN'  },
-  TR:  { x: 535, y: 272, name: 'Tripura',            capital: 'Agartala',             abbr: 'TR'  },
-  MZ:  { x: 562, y: 282, name: 'Mizoram',            capital: 'Aizawl',               abbr: 'MZ'  },
+  // ── Northeast ─────────────────────────────────────────────────────────────
+  SK:  { x: 465, y: 238, name: 'Sikkim',             capital: 'Gangtok',           abbr: 'SK'  },
+  AR:  { x: 540, y: 202, name: 'Arunachal Pradesh',  capital: 'Itanagar',          abbr: 'AR'  },
+  AS:  { x: 465, y: 293, name: 'Assam',              capital: 'Dispur',            abbr: 'AS'  },
+  NL:  { x: 528, y: 275, name: 'Nagaland',           capital: 'Kohima',            abbr: 'NL'  },
+  ML:  { x: 478, y: 330, name: 'Meghalaya',          capital: 'Shillong',          abbr: 'ML'  },
+  MN:  { x: 515, y: 330, name: 'Manipur',            capital: 'Imphal',            abbr: 'MN'  },
+  TR:  { x: 465, y: 385, name: 'Tripura',            capital: 'Agartala',          abbr: 'TR'  },
+  MZ:  { x: 490, y: 367, name: 'Mizoram',            capital: 'Aizawl',            abbr: 'MZ'  },
 
   // ── South ─────────────────────────────────────────────────────────────────
-  MH:  { x: 242, y: 418, name: 'Maharashtra',        capital: 'Mumbai',               abbr: 'MH'  },
-  TL:  { x: 348, y: 445, name: 'Telangana',          capital: 'Hyderabad',            abbr: 'TL'  },
-  AP:  { x: 372, y: 498, name: 'Andhra Pradesh',     capital: 'Amaravati',            abbr: 'AP'  },
-  GA:  { x: 228, y: 488, name: 'Goa',                capital: 'Panaji',               abbr: 'GA'  },
-  KA:  { x: 278, y: 518, name: 'Karnataka',          capital: 'Bengaluru',            abbr: 'KA'  },
-  TN:  { x: 332, y: 578, name: 'Tamil Nadu',         capital: 'Chennai',              abbr: 'TN'  },
-  KL:  { x: 262, y: 595, name: 'Kerala',             capital: 'Thiruvananthapuram',   abbr: 'KL'  },
+  MH:  { x: 165, y: 495, name: 'Maharashtra',        capital: 'Mumbai',            abbr: 'MH'  },
+  TL:  { x: 215, y: 550, name: 'Telangana',          capital: 'Hyderabad',         abbr: 'TL'  },
+  AP:  { x: 240, y: 605, name: 'Andhra Pradesh',     capital: 'Amaravati',         abbr: 'AP'  },
+  GA:  { x: 115, y: 568, name: 'Goa',                capital: 'Panaji',            abbr: 'GA'  },
+  KA:  { x: 165, y: 605, name: 'Karnataka',          capital: 'Bengaluru',         abbr: 'KA'  },
+  TN:  { x: 215, y: 678, name: 'Tamil Nadu',         capital: 'Chennai',           abbr: 'TN'  },
+  KL:  { x: 165, y: 715, name: 'Kerala',             capital: 'Thiruvananthapuram',abbr: 'KL'  },
 
   // ── Union Territories ─────────────────────────────────────────────────────
-  AN:  { x: 660, y: 510, name: 'Andaman & Nicobar',  capital: 'Port Blair',           abbr: 'AN'  },
+  AN:  { x: 660, y: 510, name: 'Andaman & Nicobar',  capital: 'Port Blair',        abbr: 'AN'  },
 };
 
 // Water dispute connections — geopolitically accurate
